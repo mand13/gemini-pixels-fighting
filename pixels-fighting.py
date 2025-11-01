@@ -167,7 +167,7 @@ def main():
     
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     # --- MODIFIED: Use game_title in window caption ---
-    pygame.display.set_caption(f"Pixels Fighting: {game_title} (SPACE to Reset)")
+    pygame.display.set_caption(f"Pixels Fighting: {game_title} (R to Reset)")
     # --- END MODIFIED ---
     clock = pygame.time.Clock()
 
@@ -215,7 +215,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_r:
                     # --- RESET ---
                     # --- MODIFIED: Must re-generate titles on reset ---
                     if args.title:
@@ -227,7 +227,7 @@ def main():
                         game_title_safe = game_title
                     
                     save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npz") # <-- MODIFIED: Switched to .npz
-                    pygame.display.set_caption(f"Pixels Fighting: {game_title} (SPACE to Reset)")
+                    pygame.display.set_caption(f"Pixels Fighting: {game_title} (R to Reset)")
                     print(f"--- RESET: Starting New Game: {game_title} ---")
                     print(f"--- Data will be saved to: {save_filename} ---")
                     # --- END MODIFIED ---
@@ -249,7 +249,7 @@ def main():
                     final_timer_string = ""
                     final_frames_string = ""
                     final_lowest_string = ""
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_q:
                     running = False
 
         # --- Timer Logic (Only if running) ---
