@@ -10,6 +10,7 @@ from colormath.color_conversions import convert_color
 
 # --- Settings ---
 RESULTS_DIR = "pixels_fighting_results"  # <-- MODIFIED: New directory for results
+TEAM_NAMES_FILE = "team_names.txt"  # <-- MODIFIED: New file for names
 
 def init_grid(width, height, num_teams):
     """Creates a new grid with random team assignments."""
@@ -41,6 +42,29 @@ def format_time(milliseconds):
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+# --- MODIFIED: New function to load team names ---
+def load_team_names(filepath, num_teams):
+    """
+    Loads a list of names from a file and randomly selects the required number.
+    Returns a fallback list (e.g., "Team 0") if file is missing or insufficient.
+    """
+    try:
+        with open(filepath, 'r') as f:
+            all_names = [line.strip() for line in f if line.strip()]
+        
+        if len(all_names) < num_teams:
+            print(f"Warning: Not enough names in {filepath} (found {len(all_names)}, need {num_teams}).")
+            raise ValueError("Not enough names")
+            
+        # Select a random sample of unique names
+        return random.sample(all_names, num_teams)
+        
+    except (IOError, ValueError):
+        # Fallback to generic names
+        print(f"Using generic names (e.g., 'Team 0').")
+        return [f"Team {i}" for i in range(num_teams)]
+# --- END MODIFIED ---
 
 def generate_distinct_colors(num_teams):
     """
@@ -108,14 +132,14 @@ def main():
     else:
         # Auto-generate a unique title based on time
         now = datetime.datetime.now()
-        game_title = now.strftime("Game_%Y-%m-%d_%H-%M-%S")
+        game_title = now.strftime("Game_%Y-%m-%d_%H-M-%S")
         game_title_safe = game_title  # This is already file-safe
     
     # Create the results directory if it doesn't exist
     os.makedirs(RESULTS_DIR, exist_ok=True)
     
     # Define the final save path
-    save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npy")
+    save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npz") # <-- MODIFIED: Switched to .npz
     
     print(f"--- Starting Game: {game_title} ---")
     print(f"--- Data will be saved to: {save_filename} ---")
@@ -160,6 +184,7 @@ def main():
     # --- Simulation State ---
     grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
     colors = generate_distinct_colors(NUM_TEAMS)
+    team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS) # <-- MODIFIED: Load names
     color_surface_array = np.zeros((GRID_HEIGHT, GRID_WIDTH, 3), dtype=np.uint8)
     
     # --- Game State Variables ---
@@ -201,7 +226,7 @@ def main():
                         game_title = now.strftime("Game_%Y-%m-%d_%H-%M-%S")
                         game_title_safe = game_title
                     
-                    save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npy")
+                    save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npz") # <-- MODIFIED: Switched to .npz
                     pygame.display.set_caption(f"Pixels Fighting: {game_title} (SPACE to Reset)")
                     print(f"--- RESET: Starting New Game: {game_title} ---")
                     print(f"--- Data will be saved to: {save_filename} ---")
@@ -209,6 +234,7 @@ def main():
 
                     grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
                     colors = generate_distinct_colors(NUM_TEAMS)
+                    team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS) # <-- MODIFIED: Reload names
                     frame_count = 0
                     start_time = pygame.time.get_ticks()
                     simulation_running = True
@@ -276,7 +302,13 @@ def main():
                 try:
                     print("Simulation ended. Saving data...")
                     final_data_array = np.array(history_data)
-                    np.save(save_filename, final_data_array) # Use the new dynamic filename
+                    # Use np.savez_compressed to save multiple arrays into one file
+                    np.savez_compressed(
+                        save_filename, 
+                        history=final_data_array, 
+                        colors=colors, 
+                        names=team_names
+                    )
                     print(f"Data saved to '{save_filename}' with shape {final_data_array.shape}")
                 except Exception as e:
                     print(f"Error saving data: {e}")
@@ -320,27 +352,46 @@ def main():
                 )
                 pygame.draw.rect(screen, color, fill_bar_rect)
                 
+                # --- MODIFIED: Show name on leaderboard ---
+                name_surf = elim_font.render(team_names[i], True, percent_text_color)
+                name_rect = name_surf.get_rect(
+                    centery=bg_bar_rect.centery - 7, 
+                    left=bg_bar_rect.left + 5
+                )
+                screen.blit(name_surf, name_rect)
+
                 percent_string = f"{percent * 100:.1f}%"
                 percent_surf = elim_font.render(percent_string, True, percent_text_color)
                 
                 percent_rect = percent_surf.get_rect(
-                    centery=bg_bar_rect.centery, 
+                    centery=bg_bar_rect.centery + 7, # Move percent down
                     right=bg_bar_rect.right - 5
                 )
+                # --- END MODIFIED ---
                 screen.blit(percent_surf, percent_rect)
                 
             else:
                 color = colors[i]
                 pygame.draw.rect(screen, color, bg_bar_rect) 
                 
+                # --- MODIFIED: Keep team name visible after elimination ---
+                name_surf = elim_font.render(team_names[i], True, elim_text_color)
+                name_rect = name_surf.get_rect(
+                    center=(bg_bar_rect.centerx, bg_bar_rect.centery - 10)
+                )
+                screen.blit(name_surf, name_rect)
+                # --- END MODIFIED ---
+
                 elim_time_str, elim_max_str = elimination_times[i]
                 
                 elim_surf_1 = elim_font.render(elim_time_str, True, elim_text_color)
-                elim_rect_1 = elim_surf_1.get_rect(center=(bg_bar_rect.centerx, bg_bar_rect.centery - 8))
+                # --- MODIFIED: Adjusted position ---
+                elim_rect_1 = elim_surf_1.get_rect(center=(bg_bar_rect.centerx, bg_bar_rect.centery + 2))
                 screen.blit(elim_surf_1, elim_rect_1)
                 
                 elim_surf_2 = elim_font.render(elim_max_str, True, elim_text_color)
-                elim_rect_2 = elim_surf_2.get_rect(center=(bg_bar_rect.centerx, bg_bar_rect.centery + 8))
+                # --- MODIFIED: Adjusted position ---
+                elim_rect_2 = elim_surf_2.get_rect(center=(bg_bar_rect.centerx, bg_bar_rect.centery + 14))
                 screen.blit(elim_surf_2, elim_rect_2)
 
         # --- Simulation Drawing Logic (Always runs) ---
