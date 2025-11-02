@@ -9,7 +9,7 @@ from colormath.color_objects import sRGBColor, LCHabColor
 from colormath.color_conversions import convert_color
 
 # --- Settings ---
-RESULTS_DIR = "pixels_fighting_results"
+RESULTS_DIR = "results"
 TEAM_NAMES_FILE = "team_names.txt"
 
 def init_grid(width, height, num_teams):

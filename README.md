@@ -4,3 +4,5 @@ This is a pixels fighting game that I created using almost exclusively Gemini co
 TODO:
 monte-carlo.py hasn't been updated. It could be updated to track many extra stats that would be interesting to analyze like each team's min and max percents (maybe all percents if not too expensive?)
 
+Maybe add saving feature so I can save the status of a currently running game to come back to later. This would be like a more advanced version of the pause feature.
+
