@@ -6,7 +6,7 @@ import argparse  # <-- MODIFIED
 import glob      # <-- MODIFIED
 
 # --- Settings ---
-RESULTS_DIR = 'pixels_fighting_results'  # <-- MODIFIED
+RESULTS_DIR = 'results'  # <-- MODIFIED
 
 def main():
     # --- MODIFIED: Add argument parsing ---
