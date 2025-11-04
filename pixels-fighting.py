@@ -156,9 +156,15 @@ def main():
     )
     parser.add_argument(
         '-p', '--pixels',
-        type=str,
+        type=int,
         default=760,
         help='Max number of real screen pixels along the grid height. Default: 760'
+    )
+    parser.add_argument(
+        '-f', '--frame_rate',
+        type=int,
+        default=60,
+        help='Frame rate for the simulation. Default: 60'
     )
     args = parser.parse_args()
 
@@ -184,9 +190,9 @@ def main():
     GRID_HEIGHT = args.grid_size
     NUM_TEAMS = args.num_teams
     UPDATES_PER_FRAME = args.updates_per_frame
-    FRAME_RATE = 60
+    FRAME_RATE = args.frame_rate
     LEADERBOARD_WIDTH = 150
-    MAX_REAL_PIXELS = int(args.pixels)
+    MAX_REAL_PIXELS = args.pixels
     PIXEL_SIZE = max(1, MAX_REAL_PIXELS // GRID_WIDTH)
 
     # --- Calculated Settings ---
