@@ -154,6 +154,12 @@ def main():
         default=None,
         help='A specific title for this game run. If not set, a unique title will be auto-generated.'
     )
+    parser.add_argument(
+        '-p', '--pixels',
+        type=str,
+        default=760,
+        help='Max number of real screen pixels along the grid height. Default: 760'
+    )
     args = parser.parse_args()
 
     # --- Handle Game Title and Filename ---
@@ -180,7 +186,8 @@ def main():
     UPDATES_PER_FRAME = args.updates_per_frame
     FRAME_RATE = 60
     LEADERBOARD_WIDTH = 150
-    PIXEL_SIZE = max(1, 760 // GRID_WIDTH)
+    MAX_REAL_PIXELS = int(args.pixels)
+    PIXEL_SIZE = max(1, MAX_REAL_PIXELS // GRID_WIDTH)
 
     # --- Calculated Settings ---
     SIM_WIDTH = GRID_WIDTH * PIXEL_SIZE
