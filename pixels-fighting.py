@@ -80,6 +80,10 @@ def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, de
                     ally_count += 1
         if ally_count >= 4:
             return # Phalanx defended successfully
+    
+    if defender_class == "Sniper":
+        if random.random() < 0.4: # Sniper is sneaky
+            return
         
     # --- Attacker mechanics apply second ---
         
@@ -90,9 +94,18 @@ def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, de
                 ny = (defender_y + dy) % grid_height
                 nx = (defender_x + dx) % grid_width
                 if grid[ny, nx] == defender_team:
-                    # random chance of taking over neighbor
+                    # random chance of taking over neighboring allies of defender
                     if random.random() < 0.7:
                         grid[ny, nx] = attacker_team
+        return
+    
+    if attacker_class == "Mortar":
+        # attack affects a 3x3 area
+        for dy in [-1, 0, 1]:
+            for dx in [-1, 0, 1]:
+                ny = (defender_y + dy) % grid_height
+                nx = (defender_x + dx) % grid_width
+                grid[ny, nx] = attacker_team
         return
     
     if attacker_class == "Plague":
@@ -129,7 +142,7 @@ def run_simulation(grid, grid_width, grid_height, team_classes, hitpoints):
     attacker_class = team_classes[attacker_team]
 
     attack_range = 1
-    if attacker_class == "Sniper":
+    if attacker_class == "Sniper" or attacker_class == "Mortar":
         attack_range = 10
     
     defender_x, defender_y = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
@@ -343,7 +356,7 @@ def main():
 
     # --- Classes ---
     TEAM_CLASSES = {}
-    possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer"]
+    possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
     HITPOINTS = {i: 0 for i in range(NUM_TEAMS)} # Track hitpoints for each team
 
     for i in range(NUM_TEAMS):

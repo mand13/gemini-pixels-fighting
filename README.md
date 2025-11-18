@@ -1,34 +1,31 @@
 # gemini-pixels-fighting
-This is a pixels fighting game that I created using almost exclusively Gemini code generation. I've prompted it to add many features including some percent control statistics and plots of team control over time.
+This is a pixels fighting game that I created using almost exclusively Gemini code generation (up until the version where I added classes, most of the work was written by hand after that). I've prompted it to add many features including some percent control statistics and plots of team control over time.
 
-TODO:
-monte-carlo.py hasn't been updated. It could be updated to track many extra stats that would be interesting to analyze like each team's min and max percents (maybe all percents if not too expensive?)
+## Character Classes
 
-Maybe add saving feature so I can save the status of a currently running game to come back to later. This would be like a more advanced version of the pause feature.
+### Sniper
+    <explanation>
+    ...
 
-I should add classes. Each class would have different mechanics. Maybe there could be a very strong defensive class, a strong offensive class, a class with default mechanics, etc.
-    - An idea is to add one where a pixel can attack any pixel on the board and basically copy/paste a giant contiguous collection of pixels of that color to somewhere, but with somewhat low probability.
-    - a healer who, if they attack themself, actually just adds a "hitpoint"
+### Snowball (not yet implemented):
+    When snowball is the chosen attacker, it selects the entire contiguous group of snowballs, and moves it in a random direction, overtaking any pixels that are in the way, and still leaving behind it's members that were already there.
 
-Current list of classes and what they do:
-["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer"]
+### IDEAS:
+- Class Ideas: Paint bucket/super plague, rook, bomber, snowball
+    - Add some sort of troop that, when attacked, may relay that attack to some third party who wasn't involved (call it the instigator?)
+    - make it so zombies can win the game (even display a percentage of zombies perhaps on the scoreboard) (they have default mechanics, but the necromancer can revive them to be on their team when they interact together) (maybe there is always a zombie team that just doesn't get assigned any pixels at the start)
+    - implement display for healer's hp
+    - Currently too weak (I think): Nomad, sniper, assassin
+    - Currently too strong (I think): Berserker, necromancer
 
-Currently too weak: Nomad, sniper, assassin
-Too strong: Berserker, necromancer
+- collect data and do analysis to determine OP teams and influence balance changes
+- implement team win for whoever has most pixels in the event of a standstill
+- Add command-line argument to play default style game
+- Add more in-depth explanation of the game to README (including all classes and what they do, why/how I made the game, etc)
+- Maybe add saving feature so I can save the status of a currently running game to come back to later. This would be like a more advanced version of the pause feature.
 
-Add argument to play default style game
 
-implement display for healer's hp
 
-implement team win for whoever has most pixels in the event of a standstill
-
-collect data to analyze which teams are OP
-
-Make sniper sneaky
-
-Class Ideas: Paint bucket/super plague, mortar, rook, bomber, snowball
-
-make it so zombies can win the game (even display a percentage of zombies perhaps on the scoreboard) (they attack like normal, but the necromancer can revive them to be on their team)
 
 
 
