@@ -16,25 +16,136 @@ def init_grid(width, height, num_teams):
     """Creates a new grid with random team assignments."""
     return np.random.randint(0, num_teams, size=(height, width), dtype=np.int32)
 
-def run_simulation(grid, num_teams, grid_width, grid_height):
+def choose_random_pixel(grid_width, grid_height):
+    """Chooses a random pixel coordinate within the grid."""
+    y = random.randint(0, grid_height - 1)
+    x = random.randint(0, grid_width - 1)
+    return y, x
+
+def choose_random_nearby_pixel(y, x, grid_width, grid_height, range=1):
+    """Chooses a random adjacent pixel coordinate, wrapping around edges."""
+    dy = random.choice([-range, 0, range])
+    dx = random.choice([-range, 0, range])
+    new_y = (y + dy) % grid_height
+    new_x = (x + dx) % grid_width
+    return new_y, new_x
+
+def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints):
+    """
+    Executes an attack from attacker to defender.
+    """
+    attacker_team = grid[attacker_y, attacker_x]
+    if attacker_team < 0:
+        return # dead pixel cannot attack
+    attacker_class = team_classes[attacker_team]
+    defender_team = grid[defender_y, defender_x]
+    if defender_team < 0:
+        grid[attacker_y, attacker_x] = defender_team # attacker becomes dead necromancer
+        grid[defender_y, defender_x] = -1*defender_team # dead necromancer comes alive
+        return
+    defender_class = team_classes[defender_team]
+
+    if defender_team == attacker_team:
+        if attacker_class == "Healer":
+            hitpoints[attacker_team] += 1 # Healer heals its collective
+        if attacker_class != "Plague":
+            return
+    
+    # --- Defensive mechanics apply first ---
+    
+    if defender_class == "Healer":
+        if hitpoints[defender_team] > 0:
+            hitpoints[defender_team] -= 1 # Healer uses hitpoint to survive
+            return
+    
+    if defender_class == "Bunker":
+        if random.random() < 0.5:
+            return # 50% chance to block attack
+    
+    if defender_class == "Thorns":
+        if random.random() < 0.3:
+            grid[attacker_y, attacker_x] = defender_team # Reflect attack
+            return
+    
+    if defender_class == "Phalanx":
+        # count adjacent allies
+        ally_count = 0
+        for dy in [-1, 0, 1]:
+            for dx in [-1, 0, 1]:
+                if dy == 0 and dx == 0:
+                    continue
+                ny = (defender_y + dy) % grid_height
+                nx = (defender_x + dx) % grid_width
+                if grid[ny, nx] == defender_team:
+                    ally_count += 1
+        if ally_count >= 4:
+            return # Phalanx defended successfully
+        
+    # --- Attacker mechanics apply second ---
+        
+    if attacker_class == "Berserker":
+        # attack converts cluster of pixels
+        for dy in [-1, 0, 1]:
+            for dx in [-1, 0, 1]:
+                ny = (defender_y + dy) % grid_height
+                nx = (defender_x + dx) % grid_width
+                if grid[ny, nx] == defender_team:
+                    # random chance of taking over neighbor
+                    if random.random() < 0.7:
+                        grid[ny, nx] = attacker_team
+        return
+    
+    if attacker_class == "Plague":
+        # newly converted pixels have a chance to convert neighbors
+        grid[defender_y, defender_x] = attacker_team
+        if random.random() < 0.5:
+            attack(grid, grid_width, grid_height, defender_y, defender_x, *choose_random_nearby_pixel(defender_y, defender_x, grid_width, grid_height, range=1), team_classes, hitpoints)
+    
+    if attacker_class == "Nomad":
+        # swap places up to 7 spaces away before attacking, and immune to defense
+        swap_y, swap_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=7)
+        grid[attacker_y, attacker_x], grid[swap_y, swap_x] = grid[swap_y, swap_x], grid[attacker_y, attacker_x]
+        grid[choose_random_nearby_pixel(swap_y, swap_x, grid_width, grid_height, range=1)] = attacker_team
+        return
+    
+    if attacker_class == "Necromancer":
+        # converts defender into a dead gray pixel, which doesn't do anything until attacked, when it turns into a necromancer pixel
+        grid[defender_y, defender_x] = -1 * attacker_team # dead pixel
+        return
+
+    # Default attack
+    grid[defender_y, defender_x] = attacker_team
+
+
+def run_simulation(grid, grid_width, grid_height, team_classes, hitpoints):
     """
     Runs one "step" of the simulation.
     Now takes grid_width and grid_height as arguments.
     """
-    attacker_y = random.randint(0, grid_height - 1)
-    attacker_x = random.randint(0, grid_width - 1)
+    attacker_x, attacker_y = choose_random_pixel(grid_width, grid_height)
     attacker_team = grid[attacker_y, attacker_x]
-    
-    defender_dy = random.randint(-1, 1)
-    defender_dx = random.randint(-1, 1)
-    
-    if defender_dy == 0 and defender_dx == 0:
-        return
+    if attacker_team < 0:
+        return # dead pixel cannot attack
+    attacker_class = team_classes[attacker_team]
 
-    defender_y = (attacker_y + defender_dy) % grid_height
-    defender_x = (attacker_x + defender_dx) % grid_width
+    attack_range = 1
+    if attacker_class == "Sniper":
+        attack_range = 10
     
-    grid[defender_y, defender_x] = attacker_team
+    defender_x, defender_y = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
+    defender_team = grid[defender_y, defender_x]
+
+    if attacker_class == "Assassin" and defender_team == attacker_team:
+        # retry up to three times
+        for _ in range(3):
+            defender_y, defender_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
+            defender_team = grid[defender_y, defender_x]
+            if defender_team != attacker_team:
+                break
+
+    attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints)
+    
+
 
 def format_time(milliseconds):
     """Converts milliseconds to a HH:MM:SS string."""
@@ -226,8 +337,17 @@ def main():
     # --- Simulation State ---
     grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
     colors = generate_distinct_colors(NUM_TEAMS)
+    dead_color = (173, 173, 173) # Gray for dead pixels
     team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS)
     color_surface_array = np.zeros((GRID_HEIGHT, GRID_WIDTH, 3), dtype=np.uint8)
+
+    # --- Classes ---
+    TEAM_CLASSES = {}
+    possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer"]
+    HITPOINTS = {i: 0 for i in range(NUM_TEAMS)} # Track hitpoints for each team
+
+    for i in range(NUM_TEAMS):
+        TEAM_CLASSES[i] = random.choice(possible_classes)
     
     # --- Game State Variables ---
     frame_count = 0
@@ -269,14 +389,11 @@ def main():
                         game_title_safe = game_title
                     
                     save_filename = os.path.join(RESULTS_DIR, f"{game_title_safe}.npz")
-                    # --- MODIFIED: Caption update ---
                     pygame.display.set_caption(f"Pixels Fighting: {game_title} (R to Reset, P to Pause)")
-                    # --- END MODIFIED ---
                     print(f"--- RESET: Starting New Game: {game_title} ---")
                     print(f"--- Data will be saved to: {save_filename} ---")
 
                     grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
-                    colors = generate_distinct_colors(NUM_TEAMS)
                     team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS)
                     frame_count = 0
                     start_time = pygame.time.get_ticks()
@@ -297,7 +414,6 @@ def main():
                 if event.key == pygame.K_q:
                     running = False
                 
-                # --- MODIFIED: Replaced is_paused flag with a call to pause_game ---
                 if event.key == pygame.K_p:
                     # Call the blocking pause function
                     pause_result = pause_game(screen, clock, pause_font, SIM_WIDTH, SIM_HEIGHT)
@@ -310,22 +426,20 @@ def main():
                     # We reset 'start_time' to be the new 'now' MINUS
                     # the elapsed time, so the timer resumes correctly.
                     start_time = pygame.time.get_ticks() - elapsed_ms
-                # --- END MODIFIED ---
 
         # --- Timer Logic (Only if running) ---
         if simulation_running:
-            # --- MODIFIED: Store elapsed_ms for timer correction ---
             elapsed_ms = pygame.time.get_ticks() - start_time
-            # --- END MODIFIED ---
             current_time_string = format_time(elapsed_ms)
 
         # --- Simulation Logic (Only if running) ---
         if simulation_running:
             for _ in range(UPDATES_PER_FRAME):
-                run_simulation(grid, NUM_TEAMS, GRID_WIDTH, GRID_HEIGHT)
+                run_simulation(grid, GRID_WIDTH, GRID_HEIGHT, TEAM_CLASSES, HITPOINTS)
             frame_count += 1
             
-            counts = np.bincount(grid.ravel(), minlength=NUM_TEAMS)
+            filtered_grid = grid[grid >= 0] # Exclude dead pixels
+            counts = np.bincount(filtered_grid.ravel(), minlength=NUM_TEAMS)
             
             current_percents = counts / TOTAL_PIXELS
             history_data.append(current_percents)
@@ -375,7 +489,8 @@ def main():
                 
         else: 
             # Simulation is not running (game has ended)
-            counts = np.bincount(grid.ravel(), minlength=NUM_TEAMS)
+            filtered_grid = grid[grid >= 0] # Exclude dead pixels
+            counts = np.bincount(filtered_grid.ravel(), minlength=NUM_TEAMS)
 
         # --- Leaderboard Drawing Logic (Always runs) ---
         # ... (this section is the same) ...
@@ -413,7 +528,7 @@ def main():
                 )
                 pygame.draw.rect(screen, color, fill_bar_rect)
                 
-                name_surf = elim_font.render(team_names[i], True, percent_text_color)
+                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i] + ")", True, percent_text_color)
                 name_rect = name_surf.get_rect(
                     centery=bg_bar_rect.centery - 7, 
                     left=bg_bar_rect.left + 5
@@ -433,7 +548,7 @@ def main():
                 color = colors[i]
                 pygame.draw.rect(screen, color, bg_bar_rect) 
                 
-                name_surf = elim_font.render(team_names[i], True, elim_text_color)
+                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i] + ")", True, elim_text_color)
                 name_rect = name_surf.get_rect(
                     center=(bg_bar_rect.centerx, bg_bar_rect.centery - 10)
                 )
@@ -451,6 +566,8 @@ def main():
 
         # --- Simulation Drawing Logic (Always runs) ---
         color_surface_array[...] = colors[grid]
+        negative_mask = (grid < 0)
+        color_surface_array[negative_mask] = dead_color
         surface = pygame.surfarray.make_surface(np.transpose(color_surface_array, (1, 0, 2)))
         scaled_surface = pygame.transform.scale(surface, (SIM_WIDTH, SIM_HEIGHT))
         screen.blit(scaled_surface, (0, 0))
@@ -499,9 +616,6 @@ def main():
             outline_surf_comeback = comeback_font.render(final_lowest_string, True, (0,0,0))
             screen.blit(outline_surf_comeback, comeback_rect.move(2,2))
             screen.blit(comeback_surf, comeback_rect)
-        
-        # --- MODIFIED: Removed the old 'is_paused' drawing block ---
-        # The pause drawing is now handled inside pause_game()
         
         # --- Final Update (Always runs) ---
         pygame.display.flip()
