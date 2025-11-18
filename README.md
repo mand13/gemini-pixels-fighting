@@ -24,5 +24,11 @@ implement team win for whoever has most pixels in the event of a standstill
 
 collect data to analyze which teams are OP
 
+Make sniper sneaky
+
+Class Ideas: Paint bucket/super plague, mortar, rook, bomber, 
+
+make it so zombies can win the game (even display a percentage of zombies perhaps on the scoreboard) (they attack like normal, but the necromancer can revive them to be on their team)
+
 
 
