@@ -13,7 +13,7 @@ This is a pixels fighting game that I created using almost exclusively Gemini co
 
 
 ## IDEAS:
-- Class Ideas: Paint bucket/super plague, rook, bomber, snowball
+- Class Ideas: Paint bucket/super plague, rook, bomber, snowball, swapper, bishop
     - Add some sort of troop that, when attacked, may relay that attack to some third party who wasn't involved (call it the instigator?)
     - NECROMANCER REWORK: make it so zombies can win the game (even display a percentage of zombies perhaps on the scoreboard) (they have default mechanics, but the necromancer can revive them to be on their team when they interact together) (maybe there is always a zombie team that just doesn't get assigned any pixels at the start)
     - implement display for healer's hp
