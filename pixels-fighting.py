@@ -95,7 +95,7 @@ def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, de
                 nx = (defender_x + dx) % grid_width
                 if grid[ny, nx] == defender_team:
                     # random chance of taking over neighboring allies of defender
-                    if random.random() < 0.7:
+                    if random.random() < 0.3:
                         grid[ny, nx] = attacker_team
         return
     
@@ -103,9 +103,10 @@ def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, de
         # attack affects a 3x3 area
         for dy in [-1, 0, 1]:
             for dx in [-1, 0, 1]:
-                ny = (defender_y + dy) % grid_height
-                nx = (defender_x + dx) % grid_width
-                grid[ny, nx] = attacker_team
+                if random.random() < 0.3: # chance to convert each pixel in area
+                    ny = (defender_y + dy) % grid_height
+                    nx = (defender_x + dx) % grid_width
+                    grid[ny, nx] = attacker_team
         return
     
     if attacker_class == "Plague":
@@ -212,7 +213,7 @@ def generate_distinct_colors(num_teams):
     
     return np.array(colors_rgb_list, dtype=np.uint8)
 
-# --- MODIFIED: New function to handle the pause state ---
+
 def pause_game(screen, clock, pause_font, sim_width, sim_height):
     """
     Pauses the game, freezes the screen, and waits for unpause or quit.
@@ -247,7 +248,6 @@ def pause_game(screen, clock, pause_font, sim_width, sim_height):
         
         # 4. Tick the clock to stay responsive without eating CPU
         clock.tick(30) # No need to run at 60 FPS while paused
-# --- END MODIFIED ---
 
 
 def main():
@@ -331,9 +331,7 @@ def main():
     pygame.font.init()
     
     screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    # --- MODIFIED: Added 'P to Pause' to caption ---
     pygame.display.set_caption(f"Pixels Fighting: {game_title} (R to Reset, P to Pause)")
-    # --- END MODIFIED ---
     clock = pygame.time.Clock()
 
     # --- Font Setup ---
@@ -342,7 +340,7 @@ def main():
     final_font_big = pygame.font.SysFont(None, 100)
     final_font_small = pygame.font.SysFont(None, 70)
     comeback_font = pygame.font.SysFont(None, 50)
-    pause_font = pygame.font.SysFont(None, 80) # <-- MODIFIED: Added pause font
+    pause_font = pygame.font.SysFont(None, 80)
     text_color = (255, 255, 255)
     elim_text_color = (0, 0, 0)
     percent_text_color = (255, 255, 255)
@@ -366,7 +364,7 @@ def main():
     frame_count = 0
     start_time = pygame.time.get_ticks()
     simulation_running = True
-    elapsed_ms = 0 # <-- MODIFIED: Need to track elapsed time for pause
+    elapsed_ms = 0
     
     team_active = [True] * NUM_TEAMS
     elimination_times = [None] * NUM_TEAMS
@@ -411,7 +409,7 @@ def main():
                     frame_count = 0
                     start_time = pygame.time.get_ticks()
                     simulation_running = True
-                    elapsed_ms = 0 # <-- MODIFIED: Reset elapsed time
+                    elapsed_ms = 0
                     team_active = [True] * NUM_TEAMS
                     elimination_times = [None] * NUM_TEAMS
                     team_low_percents = np.full(NUM_TEAMS, 1.0)
