@@ -35,8 +35,10 @@ This is a pixels fighting game that I created using almost exclusively Gemini co
 - Add feature to save game progress even if it doesn't end and I quit premature
 - Widen sidebar
 - add feature to customize which classes are playing
-- I really want there to be a reason for fires to start and spread and do something neat
+- I really want there to be a reason for fires to start and spread and do something neat (this may be what prevents dynamic/static stand-stills)
 - add game speed-up and slow down feature
+- implement object-oriented approach for classes to simplify code and updates, etc
+- write a script that automatically executes every 1v1 game
 
 
 ## Notes about class dynamics

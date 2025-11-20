@@ -8,6 +8,8 @@ import os
 from colormath.color_objects import sRGBColor, LCHabColor
 from colormath.color_conversions import convert_color
 
+import classes as cls # Importing classes module
+
 # --- Settings ---
 RESULTS_DIR = "results"
 TEAM_NAMES_FILE = "team_names.txt"
