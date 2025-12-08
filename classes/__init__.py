@@ -6,6 +6,9 @@ import logging
 
 class Class:
     def __init__(self, team_id, level=logging.INFO):
+        """
+        Initializes a new instance of the Class class.
+        """
         self.team_id = team_id
         self.logger = logging.getLogger(__name__) # create logger
         self.logger.setLevel(level) # set logging level

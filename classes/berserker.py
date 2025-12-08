@@ -14,13 +14,15 @@ class Berserker(Class):
     def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
         """
         Berserker-specific attack logic
+
+        The Berserker attacks a single pixel and converts a cluster of the defender's adjacent allies to Berserker's team.
         """
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} attacks from ({attacker_y}, {attacker_x}) to team {defender.team_id} at ({defender_y}, {defender_x})")
 
         # Implement specific attack mechanics here
         defense = defender.defend(grid, defender_y, defender_x, self, attacker_y, attacker_x)
         if defense == 0: # Defense failed, capture the pixel
-            # attack converts cluster of pixels
+            # attack converts cluster of defender's allies to Berserker's team
             for dy in [-1, 0, 1]:
                 for dx in [-1, 0, 1]:
                     ny = (defender_y + dy) % grid.shape[0]
