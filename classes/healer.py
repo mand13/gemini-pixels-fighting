@@ -11,7 +11,6 @@ class Healer(Class):
     def __init__(self, team_id, level=logging.INFO):
         super().__init__(team_id, level)
         self.health = 0
-        pass
 
     def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
         """

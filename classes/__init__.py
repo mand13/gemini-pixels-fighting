@@ -12,7 +12,6 @@ class Class:
         self.team_id = team_id
         self.logger = logging.getLogger(__name__) # create logger
         self.logger.setLevel(level) # set logging level
-        pass
 
     def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
         """
@@ -41,3 +40,13 @@ class Class:
 
         # Implement defend mechanics here
         return 0  # Default: defense fails
+
+    def pick_defender(self, grid, attacker_y, attacker_x):
+        """
+        Default pick defender logic
+        """
+        dy = random.choice([-1, 0, 1])
+        dx = random.choice([-1, 0, 1])
+        defender_y = (attacker_y + dy) % grid.shape[0]
+        defender_x = (attacker_x + dx) % grid.shape[1]
+        return defender_y, defender_x
