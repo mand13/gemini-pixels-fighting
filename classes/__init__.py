@@ -1,8 +1,11 @@
 # __init__.py
 """This module defines the Class class which is used to define the mechanics of each team in the game. Each class has unique attributes and methods that dictate how they interact with the game environment and other classes.
+
+By default, the Class class provides basic attack, defend (always fail defense), and pick_defender methods (range of 1) that can be overridden by subclasses to implement specific behaviors for different teams.
 """
 
 import logging
+import random
 
 class Class:
     def __init__(self, team_id, level=logging.INFO):
@@ -10,6 +13,7 @@ class Class:
         Initializes a new instance of the Class class.
         """
         self.team_id = team_id
+        self.range = 1
         self.logger = logging.getLogger(__name__) # create logger
         self.logger.setLevel(level) # set logging level
 
@@ -45,8 +49,8 @@ class Class:
         """
         Default pick defender logic
         """
-        dy = random.choice([-1, 0, 1])
-        dx = random.choice([-1, 0, 1])
+        dy = random.choice([-self.range, 0, 1*self.range])
+        dx = random.choice([-self.range, 0, self.range])
         defender_y = (attacker_y + dy) % grid.shape[0]
         defender_x = (attacker_x + dx) % grid.shape[1]
         return defender_y, defender_x

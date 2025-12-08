@@ -1,6 +1,8 @@
 # healer.py
 """
 This module defines the Healer class, a subclass of Class, which implements specific attack and defend mechanics for the Healer team in the game.
+
+The healer can heal its own collective by attacking its own team members or itself, and can use its stored health to successfully defend against attacks.
 """
 
 import random
@@ -54,5 +56,7 @@ class Healer(Class):
         else:
             self.logger.debug(f"{self.team_id} failed to defend ({defender_y}, {defender_x}) against an attack from team {attacker.team_id} at ({attacker_y}, {attacker_x})")
             return 0 # Defense failed
+    
+    # pick_defender logic default: inherited from Class
         
 

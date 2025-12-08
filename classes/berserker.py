@@ -1,6 +1,8 @@
 # berserker.py
 """
 This module defines the Berserker class, a subclass of Class, which implements specific attack and defend mechanics for the Berserker team in the game.
+
+The Berserker attacks a single pixel and converts a cluster of the defender's adjacent allies to Berserker's team.
 """
 
 import random
@@ -41,3 +43,5 @@ class Berserker(Class):
             return -1 # Error
 
     # defend logic default: inherited from Class
+
+    # pick_defender logic default: inherited from Class
