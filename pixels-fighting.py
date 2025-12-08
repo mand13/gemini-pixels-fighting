@@ -5,10 +5,11 @@ import colorsys
 import argparse
 import datetime
 import os
+import logging
 from colormath.color_objects import sRGBColor, LCHabColor
 from colormath.color_conversions import convert_color
 
-import classes as cls # Importing classes module
+from classes import * # Importing classes module
 
 # --- Settings ---
 RESULTS_DIR = "results"
@@ -138,28 +139,32 @@ def run_simulation(grid, grid_width, grid_height, team_classes, hitpoints):
     Runs one "step" of the simulation.
     Now takes grid_width and grid_height as arguments.
     """
-    attacker_x, attacker_y = choose_random_pixel(grid_width, grid_height)
-    attacker_team = grid[attacker_y, attacker_x]
-    if attacker_team < 0:
-        return # dead pixel cannot attack
-    attacker_class = team_classes[attacker_team]
+    attacker_y, attacker_x = choose_random_pixel(grid_width, grid_height)
+    attacker = team_classes[grid[attacker_y, attacker_x]] # instance of attacker class
+    defender_y, defender_x = attacker.pick_defender(grid, attacker_y, attacker_x)
+    attacker.attack(grid, attacker_y, attacker_x, team_classes[grid[defender_y, defender_x]], defender_y, defender_x)
 
-    attack_range = 1
-    if attacker_class == "Sniper" or attacker_class == "Mortar":
-        attack_range = 10
+    # attacker_team = grid[attacker_y, attacker_x]
+    # if attacker_team < 0:
+    #     return # dead pixel cannot attack
+    # attacker_class = team_classes[attacker_team]
+
+    # attack_range = 1
+    # if attacker_class == "Sniper" or attacker_class == "Mortar":
+    #     attack_range = 10
     
-    defender_x, defender_y = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
-    defender_team = grid[defender_y, defender_x]
+    # defender_x, defender_y = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
+    # defender_team = grid[defender_y, defender_x]
 
-    if attacker_class == "Assassin" and defender_team == attacker_team:
-        # retry up to three times
-        for _ in range(3):
-            defender_y, defender_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
-            defender_team = grid[defender_y, defender_x]
-            if defender_team != attacker_team:
-                break
+    # if attacker_class == "Assassin" and defender_team == attacker_team:
+    #     # retry up to three times
+    #     for _ in range(3):
+    #         defender_y, defender_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=attack_range)
+    #         defender_team = grid[defender_y, defender_x]
+    #         if defender_team != attacker_team:
+    #             break
 
-    attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints)
+    # attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints)
     
 
 
@@ -292,10 +297,19 @@ def main():
         default=60,
         help='Frame rate for the simulation. Default: 60'
     )
+    parser.add_argument(
+        '-ll', '--log_level',
+        type=str,
+        default='INFO',
+        help='Logging level (e.g., DEBUG, INFO, WARNING, ERROR). Default: INFO'
+    )
     args = parser.parse_args()
 
+    # Set up logging level
+    log_level = getattr(logging, args.log_level.upper(), logging.INFO)
+    logging.basicConfig(level=log_level)
+
     # --- Handle Game Title and Filename ---
-    # ... (this section is the same) ...
     if args.title:
         game_title = args.title
         game_title_safe = args.title.replace(' ', '_').replace('/', '').replace('\\', '')
@@ -356,11 +370,13 @@ def main():
 
     # --- Classes ---
     TEAM_CLASSES = {}
-    possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
+    #possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
+    # TODO fix/add all classes back
+    possible_classes = [Berserker, Healer, Sniper]
     HITPOINTS = {i: 0 for i in range(NUM_TEAMS)} # Track hitpoints for each team
 
     for i in range(NUM_TEAMS):
-        TEAM_CLASSES[i] = random.choice(possible_classes)
+        TEAM_CLASSES[i] = random.choice(possible_classes)(i, level=log_level)
     
     # --- Game State Variables ---
     frame_count = 0
@@ -541,7 +557,7 @@ def main():
                 )
                 pygame.draw.rect(screen, color, fill_bar_rect)
                 
-                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i] + ")", True, percent_text_color)
+                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i].get_name() + ")", True, percent_text_color)
                 name_rect = name_surf.get_rect(
                     centery=bg_bar_rect.centery - 7, 
                     left=bg_bar_rect.left + 5
@@ -561,7 +577,7 @@ def main():
                 color = colors[i]
                 pygame.draw.rect(screen, color, bg_bar_rect) 
                 
-                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i] + ")", True, elim_text_color)
+                name_surf = elim_font.render(team_names[i] + " (" + TEAM_CLASSES[i].get_name() + ")", True, elim_text_color)
                 name_rect = name_surf.get_rect(
                     center=(bg_bar_rect.centerx, bg_bar_rect.centery - 10)
                 )

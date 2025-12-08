@@ -7,7 +7,7 @@ The Sniper has an attack range of 10 pixels and a 40% chance to successfully def
 
 import random
 import logging
-from classes import Class
+from . import Class
 
 class Sniper(Class):
     def __init__(self, team_id, level=logging.INFO):

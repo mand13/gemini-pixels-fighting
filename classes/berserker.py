@@ -7,7 +7,7 @@ The Berserker attacks a single pixel and converts a cluster of the defender's ad
 
 import random
 import logging
-from classes import Class
+from . import Class
 
 class Berserker(Class):
     def __init__(self, team_id, level=logging.INFO):

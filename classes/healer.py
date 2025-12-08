@@ -7,7 +7,7 @@ The healer can heal its own collective by attacking its own team members or itse
 
 import random
 import logging
-from classes import Class
+from . import Class
 
 class Healer(Class):
     def __init__(self, team_id, level=logging.INFO):
@@ -40,7 +40,7 @@ class Healer(Class):
                 self.logger.error("Invalid defense return value")
                 return -1 # Error
     
-    def defend(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
+    def defend(self, grid, defender_y, defender_x, attacker, attacker_y, attacker_x):
         """
         Healer-specific defend logic
 

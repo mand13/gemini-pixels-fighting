@@ -54,3 +54,14 @@ class Class:
         defender_y = (attacker_y + dy) % grid.shape[0]
         defender_x = (attacker_x + dx) % grid.shape[1]
         return defender_y, defender_x
+    
+    def get_name(self):
+        """
+        Returns the name of the class
+        """
+        return self.__class__.__name__
+
+
+from .sniper import Sniper
+from .healer import Healer
+from .berserker import Berserker

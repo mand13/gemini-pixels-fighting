@@ -26,6 +26,7 @@ This is a pixels fighting game that I created using almost exclusively Gemini co
         - plague v mortar
         - phalanx v anything not ranged (static stand-still)
         - necromancer v mortar
+        - healer v healer
 
 - collect data and do analysis to determine OP teams and influence balance changes
 - implement team win for whoever has most pixels in the event of a standstill
