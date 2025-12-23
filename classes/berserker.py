@@ -12,6 +12,7 @@ from . import Class
 class Berserker(Class):
     def __init__(self, team_id, level=logging.INFO):
         super().__init__(team_id, level=level)
+        self.chance_to_convert = 0.70  # chance to convert adjacent allies
 
     def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
         """
@@ -31,7 +32,7 @@ class Berserker(Class):
                     nx = (defender_x + dx) % grid.shape[1]
                     if grid[ny, nx] == defender.team_id:
                         # random chance of taking over defender and neighboring allies
-                        if random.random() < 0.3:
+                        if random.random() < self.chance_to_convert:
                             grid[ny, nx] = self.team_id
                             self.logger.debug(f"Pixel at ({ny}, {nx}) captured by team {self.team_id} ({self.__class__.__name__})")
             return 1 # Attack successful

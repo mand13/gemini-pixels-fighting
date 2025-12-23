@@ -13,6 +13,7 @@ class Healer(Class):
     def __init__(self, team_id, level=logging.INFO):
         super().__init__(team_id, level)
         self.health = 0
+        self.max_health = 1
 
     def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
         """
@@ -23,8 +24,9 @@ class Healer(Class):
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} attacks from ({attacker_y}, {attacker_x}) to team {defender.team_id} at ({defender_y}, {defender_x})")
 
         # Implement specific attack mechanics here
-        if defender.team_id == self.team_id:
-            self.health += 1
+        if defender.team_id == self.team_id: # HEALING
+            if self.health < self.max_health:
+                self.health += 1
             self.logger.debug(f"Pixel at ({defender_y}, {defender_x}) healed by team {self.team_id} ({self.__class__.__name__})")
             return 1 # Attack successful
         else:

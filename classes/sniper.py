@@ -13,6 +13,7 @@ class Sniper(Class):
     def __init__(self, team_id, level=logging.INFO):
         super().__init__(team_id, level)
         self.range = 10
+        self.sneakiness = 0.4 # chance to successfully defend
 
     # attack logic default: inherited from Class
 
@@ -24,7 +25,7 @@ class Sniper(Class):
         """
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} defends at ({defender_y}, {defender_x}) against attack from team {attacker.team_id} at ({attacker_y}, {attacker_x})")
 
-        if random.random() < 0.4:
+        if random.random() < self.sneakiness:
             self.logger.debug(f"{self.team_id} successfully defended ({defender_y}, {defender_x}) against an attack from team {attacker.team_id} at ({attacker_y}, {attacker_x})")
             return 1 # Defense successful
         else:

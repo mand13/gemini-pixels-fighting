@@ -65,3 +65,6 @@ class Class:
 from .sniper import Sniper
 from .healer import Healer
 from .berserker import Berserker
+from .assassin import Assassin
+
+ #possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]

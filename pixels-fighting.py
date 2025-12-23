@@ -372,7 +372,7 @@ def main():
     TEAM_CLASSES = {}
     #possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
     # TODO fix/add all classes back
-    possible_classes = [Berserker, Healer, Sniper]
+    possible_classes = [Berserker, Healer, Sniper, Assassin]
     HITPOINTS = {i: 0 for i in range(NUM_TEAMS)} # Track hitpoints for each team
 
     for i in range(NUM_TEAMS):
