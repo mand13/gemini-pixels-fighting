@@ -66,5 +66,9 @@ from .sniper import Sniper
 from .healer import Healer
 from .berserker import Berserker
 from .assassin import Assassin
+from .bunker import Bunker
+from .phalanx import Phalanx
+from .thorns import Thorns
+from .plague import Plague
 
- #possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
+# still to implement = "Plague", "Nomad", "Necromancer", "Mortar", 
