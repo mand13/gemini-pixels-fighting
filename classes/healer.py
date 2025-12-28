@@ -10,17 +10,20 @@ import logging
 from . import Class
 
 class Healer(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level)
         self.health = 0
         self.max_health = 1
 
-    def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
+    def attack(self, grid, attacker_y, attacker_x):
         """
         Healer-specific attack logic
 
         The Healer attacks normally, but if the defender happens to be a member of its own team, it heals its collective instead.
         """
+        defender_y, defender_x = self.pick_defender(grid, attacker_y, attacker_x)
+        defender = grid[defender_y, defender_x]
+        
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} attacks from ({attacker_y}, {attacker_x}) to team {defender.team_id} at ({defender_y}, {defender_x})")
 
         # Implement specific attack mechanics here
@@ -32,7 +35,7 @@ class Healer(Class):
         else:
             defense = defender.defend(grid, defender_y, defender_x, self, attacker_y, attacker_x)
             if defense == 0: # Defense failed, capture the pixel
-                grid[defender_y, defender_x] = self.team_id
+                grid[defender_y, defender_x] = self
                 self.logger.debug(f"Pixel at ({defender_y}, {defender_x}) captured by team {self.team_id} ({self.__class__.__name__})")
                 return 1 # Attack successful
             elif defense == 1: # Defense successful, no capture

@@ -10,8 +10,8 @@ import logging
 from . import Class
 
 class Bunker(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level=level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level=level)
         self.defence_chance = 0.5  # chance to successfully defend
 
     # attack logic default: inherited from Class

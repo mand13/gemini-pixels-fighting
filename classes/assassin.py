@@ -10,8 +10,8 @@ import logging
 from . import Class
 
 class Assassin(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level=level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level=level)
 
     # attack logic default: inherited from Class
 
@@ -30,7 +30,7 @@ class Assassin(Class):
             dx = random.choice([-self.range, 0, self.range])
             defender_y = (attacker_y + dy) % grid.shape[0]
             defender_x = (attacker_x + dx) % grid.shape[1]
-            if grid[defender_y, defender_x] != self.team_id:
+            if grid[defender_y, defender_x] is not self:
                 pickedEnemy = True
             counter += 1
         return defender_y, defender_x

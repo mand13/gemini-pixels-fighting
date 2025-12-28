@@ -10,8 +10,8 @@ import logging
 from . import Class
 
 class Thorns(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level=level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level=level)
         self.reflect_chance = 0.3  # chance to reflect attack back to attacker
 
     # attack logic default: inherited from Class
@@ -24,7 +24,7 @@ class Thorns(Class):
 
         if random.random() < self.reflect_chance:
             self.logger.debug(f"{self.team_id} reflected the attack back to team {attacker.team_id} at ({attacker_y}, {attacker_x})")
-            grid[attacker_y, attacker_x] = self.team_id # reflect attack
+            grid[attacker_y, attacker_x] = self # reflect attack
             return 1  # Defense successful
         else:
             self.logger.debug(f"{self.team_id} failed to defend the attack from team {attacker.team_id} at ({attacker_y}, {attacker_x})")

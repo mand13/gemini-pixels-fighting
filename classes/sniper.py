@@ -10,8 +10,8 @@ import logging
 from . import Class
 
 class Sniper(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level)
         self.range = 10
         self.sneakiness = 0.4 # chance to successfully defend
 

@@ -8,25 +8,29 @@ import logging
 import random
 
 class Class:
-    def __init__(self, team_id, level=logging.INFO):
+    def __init__(self, team_id, color, level=logging.INFO):
         """
         Initializes a new instance of the Class class.
         """
         self.team_id = team_id
+        self.color = color
         self.range = 1
         self.logger = logging.getLogger(__name__) # create logger
         self.logger.setLevel(level) # set logging level
 
-    def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
+    def attack(self, grid, attacker_y, attacker_x):
         """
         Default attack logic
         """
+        defender_y, defender_x = self.pick_defender(grid, attacker_y, attacker_x)
+        defender = grid[defender_y, defender_x]
+
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} attacks from ({attacker_y}, {attacker_x}) to team {defender.team_id} at ({defender_y}, {defender_x})")
 
         # Implement attack mechanics here
         defense = defender.defend(grid, defender_y, defender_x, self, attacker_y, attacker_x)
         if defense == 0: # Defense failed, capture the pixel
-            grid[defender_y, defender_x] = self.team_id
+            grid[defender_y, defender_x] = self
             self.logger.debug(f"Pixel at ({defender_y}, {defender_x}) captured by team {self.team_id} ({self.__class__.__name__})")
             return 1 # Attack successful
         elif defense == 1: # Defense successful, no capture
@@ -60,6 +64,17 @@ class Class:
         Returns the name of the class
         """
         return self.__class__.__name__
+    
+    def get_count(self, grid):
+        """
+        Returns the count of pixels belonging to this class in the grid
+        """
+        count = 0
+        for y in range(grid.shape[0]):
+            for x in range(grid.shape[1]):
+                if grid[y, x] is self:
+                    count += 1
+        return count
 
 
 from .sniper import Sniper
@@ -70,5 +85,9 @@ from .bunker import Bunker
 from .phalanx import Phalanx
 from .thorns import Thorns
 from .plague import Plague
+from .nomad import Nomad
+from .mortar import Mortar
 
-# still to implement = "Plague", "Nomad", "Necromancer", "Mortar", 
+# still to implement = "Necromancer", "Mortar", 
+
+from .zombie import Zombie

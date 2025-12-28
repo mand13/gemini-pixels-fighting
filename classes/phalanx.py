@@ -10,8 +10,8 @@ import logging
 from . import Class
 
 class Phalanx(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level=level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level=level)
 
     # attack logic default: inherited from Class
 

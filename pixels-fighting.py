@@ -15,9 +15,12 @@ from classes import * # Importing classes module
 RESULTS_DIR = "results"
 TEAM_NAMES_FILE = "team_names.txt"
 
-def init_grid(width, height, num_teams):
+logger = logging.getLogger() # root logger
+
+
+def init_grid(height, width, team_classes):
     """Creates a new grid with random team assignments."""
-    return np.random.randint(0, num_teams, size=(height, width), dtype=np.int32)
+    return np.random.choice(team_classes, size=(height, width)) # grid of objects from the list of team classes
 
 def choose_random_pixel(grid_width, grid_height):
     """Chooses a random pixel coordinate within the grid."""
@@ -33,105 +36,105 @@ def choose_random_nearby_pixel(y, x, grid_width, grid_height, range=1):
     new_x = (x + dx) % grid_width
     return new_y, new_x
 
-def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints):
-    """
-    Executes an attack from attacker to defender.
-    """
-    attacker_team = grid[attacker_y, attacker_x]
-    if attacker_team < 0:
-        return # dead pixel cannot attack
-    attacker_class = team_classes[attacker_team]
-    defender_team = grid[defender_y, defender_x]
-    if defender_team < 0:
-        grid[attacker_y, attacker_x] = defender_team # attacker becomes dead necromancer
-        grid[defender_y, defender_x] = -1*defender_team # dead necromancer comes alive
-        return
-    defender_class = team_classes[defender_team]
+# def attack(grid, grid_width, grid_height, attacker_y, attacker_x, defender_y, defender_x, team_classes, hitpoints):
+#     """
+#     Executes an attack from attacker to defender.
+#     """
+#     attacker_team = grid[attacker_y, attacker_x]
+#     if attacker_team < 0:
+#         return # dead pixel cannot attack
+#     attacker_class = team_classes[attacker_team]
+#     defender_team = grid[defender_y, defender_x]
+#     if defender_team < 0:
+#         grid[attacker_y, attacker_x] = defender_team # attacker becomes dead necromancer
+#         grid[defender_y, defender_x] = -1*defender_team # dead necromancer comes alive
+#         return
+#     defender_class = team_classes[defender_team]
 
-    if defender_team == attacker_team:
-        if attacker_class == "Healer":
-            hitpoints[attacker_team] += 1 # Healer heals its collective
-        if attacker_class != "Plague":
-            return
+#     if defender_team == attacker_team:
+#         if attacker_class == "Healer":
+#             hitpoints[attacker_team] += 1 # Healer heals its collective
+#         if attacker_class != "Plague":
+#             return
     
-    # --- Defensive mechanics apply first ---
+#     # --- Defensive mechanics apply first ---
     
-    if defender_class == "Healer":
-        if hitpoints[defender_team] > 0:
-            hitpoints[defender_team] -= 1 # Healer uses hitpoint to survive
-            return
+#     if defender_class == "Healer":
+#         if hitpoints[defender_team] > 0:
+#             hitpoints[defender_team] -= 1 # Healer uses hitpoint to survive
+#             return
     
-    if defender_class == "Bunker":
-        if random.random() < 0.5:
-            return # 50% chance to block attack
+#     if defender_class == "Bunker":
+#         if random.random() < 0.5:
+#             return # 50% chance to block attack
     
-    if defender_class == "Thorns":
-        if random.random() < 0.3:
-            grid[attacker_y, attacker_x] = defender_team # Reflect attack
-            return
+#     if defender_class == "Thorns":
+#         if random.random() < 0.3:
+#             grid[attacker_y, attacker_x] = defender_team # Reflect attack
+#             return
     
-    if defender_class == "Phalanx":
-        # count adjacent allies
-        ally_count = 0
-        for dy in [-1, 0, 1]:
-            for dx in [-1, 0, 1]:
-                if dy == 0 and dx == 0:
-                    continue
-                ny = (defender_y + dy) % grid_height
-                nx = (defender_x + dx) % grid_width
-                if grid[ny, nx] == defender_team:
-                    ally_count += 1
-        if ally_count >= 4:
-            return # Phalanx defended successfully
+#     if defender_class == "Phalanx":
+#         # count adjacent allies
+#         ally_count = 0
+#         for dy in [-1, 0, 1]:
+#             for dx in [-1, 0, 1]:
+#                 if dy == 0 and dx == 0:
+#                     continue
+#                 ny = (defender_y + dy) % grid_height
+#                 nx = (defender_x + dx) % grid_width
+#                 if grid[ny, nx] == defender_team:
+#                     ally_count += 1
+#         if ally_count >= 4:
+#             return # Phalanx defended successfully
     
-    if defender_class == "Sniper":
-        if random.random() < 0.4: # Sniper is sneaky
-            return
+#     if defender_class == "Sniper":
+#         if random.random() < 0.4: # Sniper is sneaky
+#             return
         
-    # --- Attacker mechanics apply second ---
+#     # --- Attacker mechanics apply second ---
         
-    if attacker_class == "Berserker":
-        # attack converts cluster of pixels
-        for dy in [-1, 0, 1]:
-            for dx in [-1, 0, 1]:
-                ny = (defender_y + dy) % grid_height
-                nx = (defender_x + dx) % grid_width
-                if grid[ny, nx] == defender_team:
-                    # random chance of taking over neighboring allies of defender
-                    if random.random() < 0.3:
-                        grid[ny, nx] = attacker_team
-        return
+#     if attacker_class == "Berserker":
+#         # attack converts cluster of pixels
+#         for dy in [-1, 0, 1]:
+#             for dx in [-1, 0, 1]:
+#                 ny = (defender_y + dy) % grid_height
+#                 nx = (defender_x + dx) % grid_width
+#                 if grid[ny, nx] == defender_team:
+#                     # random chance of taking over neighboring allies of defender
+#                     if random.random() < 0.3:
+#                         grid[ny, nx] = attacker_team
+#         return
     
-    if attacker_class == "Mortar":
-        # attack affects a 3x3 area
-        for dy in [-1, 0, 1]:
-            for dx in [-1, 0, 1]:
-                if random.random() < 0.3: # chance to convert each pixel in area
-                    ny = (defender_y + dy) % grid_height
-                    nx = (defender_x + dx) % grid_width
-                    grid[ny, nx] = attacker_team
-        return
+#     if attacker_class == "Mortar":
+#         # attack affects a 3x3 area
+#         for dy in [-1, 0, 1]:
+#             for dx in [-1, 0, 1]:
+#                 if random.random() < 0.3: # chance to convert each pixel in area
+#                     ny = (defender_y + dy) % grid_height
+#                     nx = (defender_x + dx) % grid_width
+#                     grid[ny, nx] = attacker_team
+#         return
     
-    if attacker_class == "Plague":
-        # newly converted pixels have a chance to convert neighbors
-        grid[defender_y, defender_x] = attacker_team
-        if random.random() < 0.5:
-            attack(grid, grid_width, grid_height, defender_y, defender_x, *choose_random_nearby_pixel(defender_y, defender_x, grid_width, grid_height, range=1), team_classes, hitpoints)
+#     if attacker_class == "Plague":
+#         # newly converted pixels have a chance to convert neighbors
+#         grid[defender_y, defender_x] = attacker_team
+#         if random.random() < 0.5:
+#             attack(grid, grid_width, grid_height, defender_y, defender_x, *choose_random_nearby_pixel(defender_y, defender_x, grid_width, grid_height, range=1), team_classes, hitpoints)
     
-    if attacker_class == "Nomad":
-        # swap places up to 7 spaces away before attacking, and immune to defense
-        swap_y, swap_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=7)
-        grid[attacker_y, attacker_x], grid[swap_y, swap_x] = grid[swap_y, swap_x], grid[attacker_y, attacker_x]
-        grid[choose_random_nearby_pixel(swap_y, swap_x, grid_width, grid_height, range=1)] = attacker_team
-        return
+#     if attacker_class == "Nomad":
+#         # swap places up to 7 spaces away before attacking, and immune to defense
+#         swap_y, swap_x = choose_random_nearby_pixel(attacker_y, attacker_x, grid_width, grid_height, range=7)
+#         grid[attacker_y, attacker_x], grid[swap_y, swap_x] = grid[swap_y, swap_x], grid[attacker_y, attacker_x]
+#         grid[choose_random_nearby_pixel(swap_y, swap_x, grid_width, grid_height, range=1)] = attacker_team
+#         return
     
-    if attacker_class == "Necromancer":
-        # converts defender into a dead gray pixel, which doesn't do anything until attacked, when it turns into a necromancer pixel
-        grid[defender_y, defender_x] = -1 * attacker_team # dead pixel
-        return
+#     if attacker_class == "Necromancer":
+#         # converts defender into a dead gray pixel, which doesn't do anything until attacked, when it turns into a necromancer pixel
+#         grid[defender_y, defender_x] = -1 * attacker_team # dead pixel
+#         return
 
-    # Default attack
-    grid[defender_y, defender_x] = attacker_team
+#     # Default attack
+#     grid[defender_y, defender_x] = attacker_team
 
 
 def run_simulation(grid, grid_width, grid_height, team_classes, hitpoints):
@@ -140,9 +143,10 @@ def run_simulation(grid, grid_width, grid_height, team_classes, hitpoints):
     Now takes grid_width and grid_height as arguments.
     """
     attacker_y, attacker_x = choose_random_pixel(grid_width, grid_height)
-    attacker = team_classes[grid[attacker_y, attacker_x]] # instance of attacker class
-    defender_y, defender_x = attacker.pick_defender(grid, attacker_y, attacker_x)
-    attacker.attack(grid, attacker_y, attacker_x, team_classes[grid[defender_y, defender_x]], defender_y, defender_x)
+    attacker = grid[attacker_y, attacker_x] # get attacker object
+    #defender_y, defender_x = attacker.pick_defender(grid, attacker_y, attacker_x)
+    #logger.debug(f"{type(attacker)}, {attacker_y}, {attacker_x}, {type(grid[defender_y, defender_x])}, {defender_y}, {defender_x}")
+    attacker.attack(grid, attacker_y, attacker_x)
 
     # attacker_team = grid[attacker_y, attacker_x]
     # if attacker_team < 0:
@@ -307,7 +311,13 @@ def main():
 
     # Set up logging level
     log_level = getattr(logging, args.log_level.upper(), logging.INFO)
-    logging.basicConfig(level=log_level)
+    # Configure a handler; without this, DEBUG logs won't show
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    global logger
+    logger.setLevel(log_level)
 
     # --- Handle Game Title and Filename ---
     if args.title:
@@ -361,22 +371,26 @@ def main():
     elim_text_color = (0, 0, 0)
     percent_text_color = (255, 255, 255)
 
-    # --- Simulation State ---
-    grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
+    # --- Simulation State --
     colors = generate_distinct_colors(NUM_TEAMS)
     dead_color = (173, 173, 173) # Gray for dead pixels
     team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS)
     color_surface_array = np.zeros((GRID_HEIGHT, GRID_WIDTH, 3), dtype=np.uint8)
 
     # --- Classes ---
-    TEAM_CLASSES = {}
+    TEAM_CLASSES = []
     #possible_classes = ["Berserker", "Sniper", "Assassin", "Bunker", "Phalanx", "Thorns", "Plague", "Nomad", "Necromancer", "Healer", "Mortar"]
     # TODO fix/add all classes back
-    possible_classes = [Berserker, Healer, Sniper, Assassin, Bunker, Phalanx, Thorns, Plague]
+    possible_classes = [Berserker, Healer, Sniper, Assassin, Bunker, Phalanx, Thorns, Plague, Nomad, Mortar]
     HITPOINTS = {i: 0 for i in range(NUM_TEAMS)} # Track hitpoints for each team
 
     for i in range(NUM_TEAMS):
-        TEAM_CLASSES[i] = random.choice(possible_classes)(i, level=log_level)
+        TEAM_CLASSES.append(random.choice(possible_classes)(team_id=i, color=colors[i], level=log_level))
+
+    print(TEAM_CLASSES)
+    grid = init_grid(GRID_HEIGHT, GRID_WIDTH, TEAM_CLASSES)
+
+    counts = np.zeros(NUM_TEAMS, dtype=int)
     
     # --- Game State Variables ---
     frame_count = 0
@@ -422,7 +436,7 @@ def main():
                     print(f"--- RESET: Starting New Game: {game_title} ---")
                     print(f"--- Data will be saved to: {save_filename} ---")
 
-                    grid = init_grid(GRID_WIDTH, GRID_HEIGHT, NUM_TEAMS)
+                    grid = init_grid(GRID_HEIGHT, GRID_WIDTH, TEAM_CLASSES)
                     team_names = load_team_names(TEAM_NAMES_FILE, NUM_TEAMS)
                     frame_count = 0
                     start_time = pygame.time.get_ticks()
@@ -467,8 +481,10 @@ def main():
                 run_simulation(grid, GRID_WIDTH, GRID_HEIGHT, TEAM_CLASSES, HITPOINTS)
             frame_count += 1
             
-            filtered_grid = grid[grid >= 0] # Exclude dead pixels
-            counts = np.bincount(filtered_grid.ravel(), minlength=NUM_TEAMS)
+            filtered_grid = grid[grid is not Zombie] # Exclude dead pixels
+            for i, team in enumerate(TEAM_CLASSES):
+                count = team.get_count(grid)
+                counts[i] = count
             
             current_percents = counts / TOTAL_PIXELS
             history_data.append(current_percents)
@@ -518,8 +534,10 @@ def main():
                 
         else: 
             # Simulation is not running (game has ended)
-            filtered_grid = grid[grid >= 0] # Exclude dead pixels
-            counts = np.bincount(filtered_grid.ravel(), minlength=NUM_TEAMS)
+            filtered_grid = grid[grid is not Zombie] # Exclude dead pixels
+            for i, team in enumerate(TEAM_CLASSES):
+                count = team.get_count(grid)
+                counts[i] = count
 
         # --- Leaderboard Drawing Logic (Always runs) ---
         # ... (this section is the same) ...
@@ -594,9 +612,8 @@ def main():
                 screen.blit(elim_surf_2, elim_rect_2)
 
         # --- Simulation Drawing Logic (Always runs) ---
-        color_surface_array[...] = colors[grid]
-        negative_mask = (grid < 0)
-        color_surface_array[negative_mask] = dead_color
+        #color_surface_array[...] = colors[grid]
+        color_surface_array = np.array([[team.color for team in row] for row in grid])
         surface = pygame.surfarray.make_surface(np.transpose(color_surface_array, (1, 0, 2)))
         scaled_surface = pygame.transform.scale(surface, (SIM_WIDTH, SIM_HEIGHT))
         screen.blit(scaled_surface, (0, 0))

@@ -10,16 +10,19 @@ import logging
 from . import Class
 
 class Berserker(Class):
-    def __init__(self, team_id, level=logging.INFO):
-        super().__init__(team_id, level=level)
+    def __init__(self, team_id, color, level=logging.INFO):
+        super().__init__(team_id, color, level=level)
         self.chance_to_convert = 0.70  # chance to convert adjacent allies
 
-    def attack(self, grid, attacker_y, attacker_x, defender, defender_y, defender_x):
+    def attack(self, grid, attacker_y, attacker_x):
         """
         Berserker-specific attack logic
 
         The Berserker attacks a single pixel and converts a cluster of the defender's adjacent allies to Berserker's team.
         """
+        defender_y, defender_x = self.pick_defender(grid, attacker_y, attacker_x)
+        defender = grid[defender_y, defender_x]
+
         self.logger.debug(f"{self.__class__.__name__} from team {self.team_id} attacks from ({attacker_y}, {attacker_x}) to team {defender.team_id} at ({defender_y}, {defender_x})")
 
         # Implement specific attack mechanics here
