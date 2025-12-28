@@ -88,6 +88,6 @@ from .plague import Plague
 from .nomad import Nomad
 from .mortar import Mortar
 
-# still to implement = "Necromancer", "Mortar", 
+# still to implement = "Necromancer" 
 
 from .zombie import Zombie
